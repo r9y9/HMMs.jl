@@ -7,7 +7,7 @@ abstract HiddenMarkovModel{VF,VS,Component<:Distribution} <: Distribution{VF,VS}
 type HMM{VF,VS,C<:Distribution} <: HiddenMarkovModel{VF,VS,C}
     π::Array{Float64, 1}  # initial state prob., shape (K,)
     A::Array{Float64, 2}  # transition matrix, shape (K, K)
-    B::Vector{C}          # vector of observation model, shape (C,)
+    B::Vector{C}          # vector of observation model, shape (K,)
 
     function HMM(B::Vector{C})
         K = length(B)
@@ -20,6 +20,10 @@ function HMM{C<:Distribution}(B::Vector{C})
     VS = Distributions.value_support(C)
     return HMM{VF,VS,C}(B)
 end
+
+nstates(hmm::HMM) = length(hmm.B)
+Base.length(hmm::HMM) = length(hmm.B[1])
+Base.size(hmm::HMM) = (length(hmm), 1) # length for one ample
 
 # E-step
 function updateE!{F,S,C<:Distribution}(hmm::HMM{F,S,C},
