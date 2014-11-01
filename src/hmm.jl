@@ -73,7 +73,7 @@ end
 
 # M-step
 function updateM!{F,S,C<:Distribution}(hmm::HMM{F,S,C},
-                                       Y::AbstractMatrix,      # shape: (D, T)
+                                       Y::AbstractMatrix,    # shape: (D, T)
                                        γ::Matrix{Float64},   # shape: (K, T)
                                        ξ::Array{Float64, 3}) # shape: (K, K, T-1)
     const D, T = size(Y)
