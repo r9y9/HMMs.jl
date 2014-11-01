@@ -9,16 +9,28 @@ type HMM{VF,VS,C<:Distribution} <: HiddenMarkovModel{VF,VS,C}
     A::Array{Float64, 2}  # transition matrix, shape (K, K)
     B::Vector{C}          # vector of observation model, shape (K,)
 
-    function HMM(B::Vector{C})
-        K = length(B)
-        new(ones(K) ./ K, ones(K, K) ./ K, B)        
+    function HMM(p::Vector{Float64}, A::Matrix{Float64}, B::Vector{C})
+        if length(p) != length(B)
+            throw(DimentionMismatch("Inconsistent dimentions"))
+        end
+        if !isprobvec(p)
+            throw(ArgumentError("p = $p is not a probability vector."))
+        end
+        new(p, A, B)
     end
 end
 
-function HMM{C<:Distribution}(B::Vector{C})
+function HMM{C<:Distribution}(p::Vector{Float64},
+                              A::Matrix{Float64},
+                              B::Vector{C})
     VF = Distributions.variate_form(C)
     VS = Distributions.value_support(C)
-    return HMM{VF,VS,C}(B)
+    HMM{VF,VS,C}(p, A, B)
+end
+
+function HMM{C<:Distribution}(B::Vector{C})
+    K = length(B)
+    HMM(ones(K)/K, ones(K, K) ./ K, B)
 end
 
 nstates(hmm::HMM) = length(hmm.B)
