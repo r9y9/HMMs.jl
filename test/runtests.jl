@@ -24,6 +24,10 @@ r = fit!(chmm, Y, maxiter=30, verbose=false, tol=-1.0)
 @test mean(g1.μ-chmm.B[1].μ) < 0.1
 @test mean(g2.μ-chmm.B[2].μ) < 0.1
 
+z = decode(chmm, Y)
+@test any(z[T/2+1:end] .== 1)
+@test any(z[1:T/2] .== 2)
+
 # Discrete Multinomial HMM
 srand(98765)
 
@@ -42,4 +46,7 @@ Y = y1 + y2
 dhmm = HMM([m1, m2])
 r = fit!(dhmm, Y, maxiter=30, verbose=false, tol=-1.0)
 
-# TODO test
+# TODO more tests
+z = decode(chmm, Y)
+@test any(z[T/2+1:end] .== 1)
+@test any(z[1:T/2] .== 2)
