@@ -35,7 +35,7 @@ end
 
 nstates(hmm::HMM) = length(hmm.B)
 Base.length(hmm::HMM) = length(hmm.B[1])
-Base.size(hmm::HMM) = (length(hmm), 1) # length for one ample
+Base.size(hmm::HMM) = (length(hmm), 1) # length for one sample
 
 # E-step
 function updateE!{F,S,C<:Distribution}(hmm::HMM{F,S,C},
