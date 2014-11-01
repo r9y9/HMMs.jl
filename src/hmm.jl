@@ -165,3 +165,38 @@ function fit!{F,S,C<:Distribution}(hmm::HMM{F,S,C},
     
     return HMMTrainingResult(likelihood, α, β, γ, ξ)
 end
+
+function decode{F,S,C<:Distribution}(hmm::HMM{F,S,C},
+                                     Y::AbstractMatrix)
+    const D, T = size(Y)
+    D == length(hmm) || throw(DimentionMismatch("Inconsistent dimentions"))
+
+    const K = nstates(hmm)
+    ψ = zeros(Float64, K, T)
+    Ψ = zeros(Int, K, T)
+
+    logπ = log(hmm.π)
+    logA = log(hmm.A)
+    for k=1:K
+        ψ[k,1] = logπ[k] + logpdf(hmm.B[k], Y[:,1])
+    end
+    Ψ[:,1] = indmax(ψ[:,1])
+
+    # forward recursion
+    for t=2:T
+        for k=1:K
+            p = ψ[:,t-1] + hmm.A[:,k] + logpdf(hmm.B[k], Y[:,t])
+            ψ[k,t] = maximum(p)
+            Ψ[k,t] = indmax(p)
+        end
+    end
+
+    # backtrace
+    z = zeros(Int, T)
+    z[end] = indmax(ψ[:,end])
+    for t=T-1:-1:1
+        z[t] = Ψ[z[t+1],t]
+    end
+
+    return z
+end
