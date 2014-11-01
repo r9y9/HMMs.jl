@@ -83,9 +83,9 @@ function updateM!{F,S,C<:Distribution}(hmm::HMM{F,S,C},
     hmm.π[:] = γ[:,1] / sum(γ[:,1])
 
     # transition
-    hmm.A[:,:] = sum(ξ, 3) ./ sum(γ, 2)
+    hmm.A[:,:] = sum(ξ, 3) ./ sum(γ[:,1:end-1], 2)
 
-    # no need?
+    # ensure sum of A[:,i] = 1.0
     hmm.A[:,:] ./= sum(hmm.A, 2)
 
     # observation
