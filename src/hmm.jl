@@ -51,7 +51,7 @@ function updateE!{F,S,C<:Distribution}(hmm::HMM{F,S,C},
     # Observatoion prob.
     for k=1:K        
         for t=1:T
-            B[k,t] = pdf(hmm.B[k], Y[:,t])
+            @inbounds B[k,t] = pdf(hmm.B[k], Y[:,t])
         end
     end
 
@@ -63,9 +63,8 @@ function updateE!{F,S,C<:Distribution}(hmm::HMM{F,S,C},
     c[1] = sum(α[:,1])
     α[:,1] /= c[1]
     for t=2:T
-        α[:,t] = (hmm.A' * α[:,t-1]) .* B[:,t]
-        c[t] = sum(α[:,t])
-        α[:,t] /= c[t]
+        @inbounds α[:,t] = (hmm.A' * α[:,t-1]) .* B[:,t]
+        @inbounds α[:,t] /= (c[t] = sum(α[:,t]))
     end
     @assert !any(isnan(α))
 
@@ -74,14 +73,14 @@ function updateE!{F,S,C<:Distribution}(hmm::HMM{F,S,C},
     # backword recursion
     β[:,T] = 1.0
     for t=T-1:-1:1
-        β[:,t] = hmm.A * β[:,t+1] .* B[:,t+1] ./ c[t+1]
+        @inbounds β[:,t] = hmm.A * β[:,t+1] .* B[:,t+1] ./ c[t+1]
     end
     @assert !any(isnan(β))
 
     γ = α .* β
 
     for t=1:T-1
-        ξ[:,:,t] = hmm.A .* α[:,t] .* β[:,t+1]' .* B[:,t+1]' ./ c[t+1]
+        @inbounds ξ[:,:,t] = hmm.A .* α[:,t] .* β[:,t+1]' .* B[:,t+1]' ./ c[t+1]
     end
 
     return γ, ξ, likelihood
@@ -178,14 +177,14 @@ function decode{F,S,C<:Distribution}(hmm::HMM{F,S,C},
     logπ = log(hmm.π)
     logA = log(hmm.A)
     for k=1:K
-        ψ[k,1] = logπ[k] + logpdf(hmm.B[k], Y[:,1])
+        @inbounds ψ[k,1] = logπ[k] + logpdf(hmm.B[k], Y[:,1])
     end
     Ψ[:,1] = indmax(ψ[:,1])
 
     # forward recursion
     for t=2:T
         for k=1:K
-            p = ψ[:,t-1] + hmm.A[:,k] + logpdf(hmm.B[k], Y[:,t])
+            @inbounds p = ψ[:,t-1] + hmm.A[:,k] + logpdf(hmm.B[k], Y[:,t])
             ψ[k,t] = maximum(p)
             Ψ[k,t] = indmax(p)
         end
@@ -195,7 +194,7 @@ function decode{F,S,C<:Distribution}(hmm::HMM{F,S,C},
     z = zeros(Int, T)
     z[end] = indmax(ψ[:,end])
     for t=T-1:-1:1
-        z[t] = Ψ[z[t+1],t]
+        @inbounds z[t] = Ψ[z[t+1],t]
     end
 
     return z
