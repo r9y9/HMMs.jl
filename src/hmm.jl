@@ -5,7 +5,7 @@ abstract HiddenMarkovModel{VF,VS,Component<:Distribution} <: Distribution{VF,VS}
 
 # Note that distribution C must implement fit_mle, maximum likelihood estimation.
 type HMM{VF,VS,C<:Distribution} <: HiddenMarkovModel{VF,VS,C}
-    π::Array{Float64, 1} # initial state prob., shape (K,)
+    π::Array{Float64, 1}  # initial state prob., shape (K,)
     A::Array{Float64, 2}  # transition matrix, shape (K, K)
     B::Vector{C}          # vector of observation model, shape (C,)
 
@@ -23,12 +23,12 @@ end
 
 # E-step
 function updateE!{F,S,C<:Distribution}(hmm::HMM{F,S,C},
-                                       Y::AbstractMatrix,     # shape: (D, T)
+                                       Y::AbstractMatrix,    # shape: (D, T)
                                        α::Matrix{Float64},   # shape: (K, T)
                                        β::Matrix{Float64},   # shape: (K, T)
                                        γ::Matrix{Float64},   # shape: (K, T)
                                        ξ::Array{Float64, 3}, # shape: (K, K, T-1)
-                                       B::Matrix{Float64})    # shape: (K, T)
+                                       B::Matrix{Float64})   # shape: (K, T)
     const D, T = size(Y)
     const K = length(hmm.B)
     
@@ -73,7 +73,7 @@ end
 
 # M-step
 function updateM!{F,S,C<:Distribution}(hmm::HMM{F,S,C},
-                                       Y::AbstractMatrix,
+                                       Y::AbstractMatrix,      # shape: (D, T)
                                        γ::Matrix{Float64},   # shape: (K, T)
                                        ξ::Array{Float64, 3}) # shape: (K, K, T-1)
     const D, T = size(Y)
