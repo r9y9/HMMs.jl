@@ -30,7 +30,7 @@ end
 
 function HMM{C<:Distribution}(B::Vector{C})
     K = length(B)
-    HMM(ones(K)/K, ones(K, K) ./ K, B)
+    HMM(ones(K)/K, ones(K, K)/K, B)
 end
 
 nstates(hmm::HMM) = length(hmm.B)
@@ -60,8 +60,7 @@ function updateE!{F,S,C<:Distribution}(hmm::HMM{F,S,C},
 
     # forward recursion
     α[:,1] = hmm.π .* B[:,1]
-    c[1] = sum(α[:,1])
-    α[:,1] /= c[1]
+    α[:,1] /= (c[1] = sum(α[:,1]))
     for t=2:T
         @inbounds α[:,t] = (hmm.A' * α[:,t-1]) .* B[:,t]
         @inbounds α[:,t] /= (c[t] = sum(α[:,t]))
