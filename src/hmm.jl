@@ -111,9 +111,11 @@ end
 function compute_observation_prob!(hmm::HMM,
                                    Y::AbstractMatrix,
                                    B::Matrix{Float64})
+    const T = size(Y, 2)
     K = nstates(hmm)
+    size(B) == (K, T) || throw(DimentionMismatch("Inconsistent dimentions"))
     for k=1:K
-        for t=1:size(Y,2)
+        for t=1:T
             @inbounds B[k,t] = pdf(hmm.B[k], Y[:,t])
         end
     end
