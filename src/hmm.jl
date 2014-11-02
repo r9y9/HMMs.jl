@@ -48,13 +48,6 @@ function updateE!{F,S,C<:Distribution}(hmm::HMM{F,S,C},
     const D, T = size(Y)
     const K = length(hmm.B)
     
-    # Observatoion prob.
-    for k=1:K        
-        for t=1:T
-            @inbounds B[k,t] = pdf(hmm.B[k], Y[:,t])
-        end
-    end
-
     # scaling paramter
     c = Array(Float64, T)
 
@@ -116,6 +109,18 @@ type HMMTrainingResult
     ξ::Array{Float64, 3}
 end
 
+function compute_observation_prob!(hmm::HMM,
+                                   Y::AbstractMatrix,
+                                   B::Matrix{Float64})
+    K = nstates(hmm)
+    for k=1:K
+        for t=1:size(Y,2)
+            @inbounds B[k,t] = pdf(hmm.B[k], Y[:,t])
+        end
+    end
+    B
+end
+
 function fit!{F,S,C<:Distribution}(hmm::HMM{F,S,C},
                                    Y::AbstractMatrix;
                                    maxiter::Int=100,
@@ -134,6 +139,8 @@ function fit!{F,S,C<:Distribution}(hmm::HMM{F,S,C},
 
     # Roop of EM-algorithm
     for iter=1:maxiter
+        B = compute_observation_prob!(hmm, Y, B)
+
         # update expectations
         γ, ξ, score = updateE!(hmm, Y, α, β, γ, ξ, B)
 
