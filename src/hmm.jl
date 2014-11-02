@@ -46,7 +46,6 @@ function updateE!{F,S,C<:Distribution}(hmm::HMM{F,S,C},
                                        ξ::Array{Float64, 3}, # shape: (K, K, T-1)
                                        B::Matrix{Float64})   # shape: (K, T)
     const D, T = size(Y)
-    const K = length(hmm.B)
     
     # scaling paramter
     c = Array(Float64, T)
