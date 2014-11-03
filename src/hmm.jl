@@ -38,13 +38,13 @@ Base.length(hmm::HMM) = length(hmm.B[1])
 Base.size(hmm::HMM) = (length(hmm), 1) # length for one sample
 
 # E-step
-function updateE!{F,S,C<:Distribution}(hmm::HMM{F,S,C},
-                                       Y::AbstractMatrix,    # shape: (D, T)
-                                       α::Matrix{Float64},   # shape: (K, T)
-                                       β::Matrix{Float64},   # shape: (K, T)
-                                       γ::Matrix{Float64},   # shape: (K, T)
-                                       ξ::Array{Float64, 3}, # shape: (K, K, T-1)
-                                       B::Matrix{Float64})   # shape: (K, T)
+function updateE!(hmm::HMM,
+                  Y::AbstractMatrix,    # shape: (D, T)
+                  α::Matrix{Float64},   # shape: (K, T)
+                  β::Matrix{Float64},   # shape: (K, T)
+                  γ::Matrix{Float64},   # shape: (K, T)
+                  ξ::Array{Float64, 3}, # shape: (K, K, T-1)
+                  B::Matrix{Float64})   # shape: (K, T)
     const D, T = size(Y)
     
     # scaling paramter
@@ -122,11 +122,11 @@ function compute_observation_prob!(hmm::HMM,
     B
 end
 
-function fit!{F,S,C<:Distribution}(hmm::HMM{F,S,C},
-                                   Y::AbstractMatrix;
-                                   maxiter::Int=100,
-                                   tol::Float64=-1.0,
-                                   verbose::Bool=false)
+function fit!(hmm::HMM,
+              Y::AbstractMatrix;
+              maxiter::Int=100,
+              tol::Float64=-1.0,
+              verbose::Bool=false)
     const D, T = size(Y)
     const K = length(hmm.B)
     
@@ -172,8 +172,7 @@ function fit!{F,S,C<:Distribution}(hmm::HMM{F,S,C},
     return HMMTrainingResult(likelihood, α, β, γ, ξ)
 end
 
-function decode{F,S,C<:Distribution}(hmm::HMM{F,S,C},
-                                     Y::AbstractMatrix)
+function decode(hmm::HMM, Y::AbstractMatrix)
     const D, T = size(Y)
     D == length(hmm) || throw(DimentionMismatch("Inconsistent dimentions"))
 
